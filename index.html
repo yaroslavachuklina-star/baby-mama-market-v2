@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+  >
+  <meta name="theme-color" content="#fff7f5">
+  <title>Baby & Mama Market 🌸</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg: #fff7f5;
+      --card: #ffffff;
+      --pink: #f28fa6;
+      --pink-dark: #df6f8b;
+      --pink-soft: #ffe4eb;
+      --text: #33292c;
+      --muted: #8d7e82;
+      --line: #f0e2e5;
+      --danger: #d94c68;
+      --shadow: 0 8px 28px rgba(87, 54, 63, .08);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      padding-bottom: calc(90px + env(safe-area-inset-bottom));
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding:
+        calc(12px + env(safe-area-inset-top))
+        16px 12px;
+      background: rgba(255,247,245,.95);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .brand span {
+      color: var(--pink-dark);
+    }
+
+    .user-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 0;
+      background: var(--pink-soft);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+
+    .container {
+      width: min(100%, 720px);
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .hero {
+      padding: 18px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #ffdfe7, #fff);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      margin: 0 0 7px;
+      font-size: 25px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 12px 14px;
+      border-radius: 17px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .search input {
+      border: 0;
+      outline: 0;
+      width: 100%;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .categories {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      padding-bottom: 6px;
+      scrollbar-width: none;
+      margin-bottom: 16px;
+    }
+
+    .categories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 9px 13px;
+      border-radius: 999px;
+      color: var(--text);
+    }
+
+    .chip.active {
+      background: var(--pink);
+      border-color: var(--pink);
+      color: #fff;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 18px 2px 12px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .product {
+      overflow: hidden;
+      background: var(--card);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+      background: #f5edef;
+    }
+
+    .no-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      background: #f8edef;
+      font-size: 38px;
+    }
+
+    .product-body {
+      padding: 12px;
+    }
+
+    .product-title {
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1.25;
+      margin-bottom: 7px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .product-price {
+      color: var(--pink-dark);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .product-meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      background: #fff;
+      border: 1px dashed #e7cdd4;
+      border-radius: 22px;
+      padding: 34px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: min(100%, 720px);
+      padding:
+        8px 12px
+        calc(8px + env(safe-area-inset-bottom));
+      background: rgba(255,255,255,.96);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .nav-btn {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 3px;
+      display: grid;
+      gap: 3px;
+      place-items: center;
+      font-size: 11px;
+    }
+
+    .nav-btn .icon {
+      font-size: 22px;
+    }
+
+    .nav-btn.active {
+      color: var(--pink-dark);
+      font-weight: 700;
+    }
+
+    .add-btn {
+      width: 52px;
+      height: 52px;
+      margin-top: -24px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: var(--pink);
+      color: #fff;
+      font-size: 30px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 22px rgba(223,111,139,.32);
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 7px 2px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid #eadadd;
+      border-radius: 14px;
+      padding: 13px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 105px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--pink);
+    }
+
+    .primary {
+      width: 100%;
+      border: 0;
+      background: var(--pink);
+      color: white;
+      font-weight: 800;
+      padding: 14px;
+      border-radius: 15px;
+    }
+
+    .primary:disabled {
+      opacity: .55;
+    }
+
+    .secondary {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      padding: 13px;
+      border-radius: 15px;
+      font-weight: 700;
+    }
+
+    .profile-card {
+      text-align: center;
+    }
+
+    .avatar {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      display: grid;
+      place-items: center;
+      background: var(--pink-soft);
+      font-size: 34px;
+      overflow: hidden;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .username {
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .status {
+      margin: 12px 0;
+      padding: 10px 12px;
+      border-radius: 13px;
+      background: #fff4f7;
+      color: #9a5264;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 105px;
+      width: calc(100% - 32px);
+      max-width: 520px;
+      background: #352c2f;
+      color: white;
+      border-radius: 14px;
+      padding: 12px 15px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .loading {
+      padding: 30px;
+      text-align: center;
+      color: var(--muted);
+      grid-column: 1 / -1;
+    }
+
+    @media (min-width: 600px) {
+      .products {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header">
+  <div class="header-row">
+    <div class="brand">Baby & Mama <span>Market</span> 🌸</div>
+    <button class="user-badge" onclick="showPage('profile')">👩‍🍼</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ГОЛОВНА -->
+  <section id="homePage" class="page active">
+    <div class="hero">
+      <h1>Знайди щось миле 💕</h1>
+      <p>Маркет для мам: продавай і знаходь дитячі речі легко та без зайвого клопоту.</p>
+    </div>
+
+    <div class="search">
+      🔎
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Пошук оголошень..."
+        oninput="renderProducts()"
+      >
+    </div>
+
+    <div class="categories" id="categories"></div>
+
+    <div class="section-title">
+      <h2>Оголошення</h2>
+    </div>
+
+    <div id="products" class="products">
+      <div class="loading">Завантажую оголошення… 🌷</div>
+    </div>
+  </section>
+
+  <!-- ДОДАТИ -->
+  <section id="addPage" class="page">
+    <div class="section-title">
+      <h2>Нове оголошення ✨</h2>
+    </div>
+
+    <div class="panel">
+      <form id="listingForm">
+
+        <div class="form-group">
+          <label for="title">Назва</label>
+          <input id="title" required maxlength="100" placeholder="Наприклад: комбінезон Zara">
+        </div>
+
+        <div class="form-group">
+          <label for="price">Ціна, грн</label>
+          <input id="price" type="number" min="0" step="1" required placeholder="250">
+        </div>
+
+        <div class="form-group">
+          <label for="category">Категорія</label>
+          <select id="category" required>
+            <option value="Одяг">👕 Одяг</option>
+            <option value="Взуття">👟 Взуття</option>
+            <option value="Іграшки">🧸 Іграшки</option>
+            <option value="Коляски">🍼 Коляски та великі речі</option>
+            <option value="Для мами">🌷 Для мами</option>
+            <option value="Інше">✨ Інше</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Опис</label>
+          <textarea
+            id="description"
+            maxlength="1000"
+            placeholder="Стан, розмір, особливості..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="sellerTelegram">Telegram продавця</label>
+          <input
+            id="sellerTelegram"
+            placeholder="@username"
+            autocomplete="off"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="photo">Фото товару</label>
+          <input id="photo" type="file" accept="image/*">
+        </div>
+
+        <button id="publishBtn" class="primary" type="submit">
+          Опублікувати 🌸
+        </button>
+
+      </form>
+    </div>
+  </section>
+
+  <!-- МОЇ ОГОЛОШЕННЯ -->
+  <section id="minePage" class="page">
+    <div class="section-title">
+      <h2>Мої оголошення 🛍️</h2>
+    </div>
+
+    <div id="myProducts" class="products">
+      <div class="loading">Завантажую…</div>
+    </div>
+  </section>
+
+  <!-- ПРОФІЛЬ -->
+  <section id="profilePage" class="page">
+    <div class="section-title">
+      <h2>Мій профіль</h2>
+    </div>
+
+    <div class="panel profile-card">
+      <div id="profileAvatar" class="avatar">👩‍🍼</div>
+      <div id="profileName" style="font-size:20px;font-weight:800">
+        Користувач
+      </div>
+      <div id="profileUsername" class="username">
+        Telegram
+      </div>
+
+      <div id="authStatus" class="status">
+        Перевіряю Telegram…
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-page="home" onclick="showPage('home')">
+    <span class="icon">🏠</span>
+    <span>Головна</span>
+  </button>
+
+  <button class="nav-btn" data-page="mine" onclick="showPage('mine')">
+    <span class="icon">🛍️</span>
+    <span>Мої</span>
+  </button>
+
+  <button class="nav-btn" data-page="add" onclick="showPage('add')">
+    <span class="add-btn">+</span>
+    <span>Додати</span>
+  </button>
+
+  <button class="nav-btn" data-page="profile" onclick="showPage('profile')">
+    <span class="icon">👤</span>
+    <span>Профіль</span>
+  </button>
+</nav>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  /*
+    BABY & MAMA MARKET V2
+
+    ВАЖЛИВО:
+    Тут використовується тільки браузерний anon key.
+    Secret/service-role key сюди НЕ вставляємо.
+  */
+
+  const SUPABASE_URL =
+    "https://skrupehcpxuxzueowdsv.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrcnVwZWhjcHh1eHp1ZW93ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjE1MDIsImV4cCI6MjEwNTU5NzUwMn0.YGqpymuyNkziJOmBp4cyELE5qIuprviekgd7tmi1ong";
+
+  const TELEGRAM_AUTH_URL =
+    SUPABASE_URL + "/functions/v1/telegram-auth";
+
+  const db = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  const tg = window.Telegram?.WebApp;
+
+  let currentUser = null;
+  let listings = [];
+  let selectedCategory = "Усі";
+
+  const categoryList = [
+    "Усі",
+    "Одяг",
+    "Взуття",
+    "Іграшки",
+    "Коляски",
+    "Для мами",
+    "Інше"
+  ];
+
+  function toast(message) {
+    const el = document.getElementById("toast");
+    el.textContent = message;
+    el.classList.add("show");
+
+    setTimeout(() => {
+      el.classList.remove("show");
+    }, 2600);
+  }
+
+  function escapeHtml(value = "") {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function normalizeTelegram(value = "") {
+    let username = value.trim();
+
+    username = username
+      .replace("https://t.me/", "")
+      .replace("http://t.me/", "")
+      .replace("t.me/", "")
+      .replace("@", "");
+
+    return username;
+  }
+
+  function showPage(name) {
+    document.querySelectorAll(".page").forEach(page => {
+      page.classList.remove("active");
+    });
+
+    const page = document.getElementById(name + "Page");
+
+    if (page) {
+      page.classList.add("active");
+    }
+
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+      btn.classList.toggle(
+        "active",
+        btn.dataset.page === name
+      );
+    });
+
+    if (name === "mine") {
+      renderMyProducts();
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
+
+  function renderCategories() {
+    const box = document.getElementById("categories");
+
+    box.innerHTML = categoryList.map(category => `
+      <button
+        class="chip ${selectedCategory === category ? "active" : ""}"
+        onclick='selectCategory(${JSON.stringify(category)})'
+      >
+        ${escapeHtml(category)}
+      </button>
+    `).join("");
+  }
+
+  function selectCategory(category) {
+    selectedCategory = category;
+    renderCategories();
+    renderProducts();
+  }
+
+  function productCard(item) {
+    const title = escapeHtml(item.title || "Без назви");
+    const category = escapeHtml(item.category || "Інше");
+    const price = Number(item.price || 0);
+    const photo = item.photo_url
+      ? `<img class="product-image" src="${escapeHtml(item.photo_url)}" alt="">`
+      : `<div class="no-image">🧸</div>`;
+
+    return `
+      <article class="product" onclick='openListing(${JSON.stringify(item.id)})'>
+        ${photo}
+
+        <div class="product-body">
+          <div class="product-title">${title}</div>
+          <div class="product-price">${price.toLocaleString("uk-UA")} грн</div>
+          <div class="product-meta">${category}</div>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderProducts() {
+    const box = document.getElementById("products");
+    const search =
+      document.getElementById("searchInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const filtered = listings.filter(item => {
+      const categoryOK =
+        selectedCategory === "Усі" ||
+        item.category === selectedCategory;
+
+      const text =
+        `${item.title || ""} ${item.description || ""}`
+          .toLowerCase();
+
+      const searchOK =
+        !search || text.includes(search);
+
+      return categoryOK && searchOK;
+    });
+
+    if (!filtered.length) {
+      box.innerHTML = `
+        <div class="empty">
+          Тут поки тихенько 🌷<br>
+          Додай перше оголошення.
+        </div>
+      `;
+      return;
+    }
+
+    box.innerHTML = filtered.map(productCard).join("");
+  }
+
+  function renderMyProducts() {
+    const box = document.getElementById("myProducts");
+
+    if (!currentUser) {
+      box.innerHTML = `
+        <div class="empty">
+          Відкрий маркет через Telegram,
+          щоб побачити свої оголошення.
+        </div>
+      `;
+      return;
+    }
+
+    const mine = listings.filter(item =>
+      String(item.telegram_user_id) ===
+      String(currentUser.id)
+    );
+
+    if (!mine.length) {
+      box.innerHTML = `
+        <div class="empty">
+          У тебе ще немає оголошень 🌸
+        </div>
+      `;
+      return;
+    }
+
+    box.innerHTML = mine.map(productCard).join("");
+  }
+
+  function openListing(id) {
+    const item = listings.find(x =>
+      String(x.id) === String(id)
+    );
+
+    if (!item) return;
+
+    const seller = normalizeTelegram(
+      item.seller_telegram || ""
+    );
+
+    const text =
+      `${item.title || "Оголошення"}\n` +
+      `${Number(item.price || 0).toLocaleString("uk-UA")} грн\n\n` +
+      `${item.description || ""}`;
+
+    if (seller) {
+      const go = confirm(
+        text + "\n\nНаписати продавцю в Telegram?"
+      );
+
+      if (go) {
+        const url =
+          "https://t.me/" +
+          encodeURIComponent(seller);
+
+        if (tg?.openTelegramLink) {
+          tg.openTelegramLink(url);
+        } else {
+          window.open(url, "_blank");
+        }
+      }
+    } else {
+      alert(text);
+    }
+  }
+
+  async function authenticateTelegram() {
+    if (tg) {
+      try {
+        tg.ready();
+        tg.expand();
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    const initData = tg?.initData || "";
+
+    if (!initData) {
+      document.getElementById("authStatus").textContent =
+        "Маркет відкритий не через Telegram. Для публікації відкрий його кнопкою бота.";
+
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        TELEGRAM_AUTH_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization":
+              "Bearer " + SUPABASE_ANON_KEY,
+            "apikey":
+              SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            initData
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error ||
+          "Telegram authentication failed"
+        );
+      }
+
+      currentUser =
+        result.user ||
+        result.telegram_user ||
+        result.data?.user ||
+        tg.initDataUnsafe?.user ||
+        null;
+
+      if (!currentUser) {
+        throw new Error(
+          "Функція не повернула Telegram user"
+        );
+      }
+
+      fillProfile();
+
+      document.getElementById("authStatus").textContent =
+        "Telegram підтверджено ✅";
+
+    } catch (error) {
+      console.error(error);
+
+      document.getElementById("authStatus").textContent =
+        "Не вдалося підтвердити Telegram: " +
+        error.message;
+    }
+  }
+
+  function fillProfile() {
+    if (!currentUser) return;
+
+    const fullName =
+      [
+        currentUser.first_name,
+        currentUser.last_name
+      ]
+      .filter(Boolean)
+      .join(" ") ||
+      "Користувач";
+
+    document.getElementById("profileName").textContent =
+      fullName;
+
+    document.getElementById("profileUsername").textContent =
+      currentUser.username
+        ? "@" + currentUser.username
+        : "Telegram ID: " + currentUser.id;
+
+    if (currentUser.photo_url) {
+      document.getElementById("profileAvatar").innerHTML =
+        `<img src="${escapeHtml(currentUser.photo_url)}" alt="">`;
+    }
+
+    const sellerInput =
+      document.getElementById("sellerTelegram");
+
+    if (
+      currentUser.username &&
+      !sellerInput.value
+    ) {
+      sellerInput.value =
+        "@" + currentUser.username;
+    }
+  }
+
+  async function loadListings() {
+    const box = document.getElementById("products");
+
+    try {
+      const { data, error } = await db
+        .from("listings")
+        .select("*")
+        .order("created_at", {
+          ascending: false
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      listings = data || [];
+
+      renderProducts();
+      renderMyProducts();
+
+    } catch (error) {
+      console.error(error);
+
+      box.innerHTML = `
+        <div class="empty">
+          Не вдалося завантажити оголошення.<br><br>
+          ${escapeHtml(error.message)}
+        </div>
+      `;
+    }
+  }
+
+  async function uploadPhoto(file) {
+    if (!file) return null;
+
+    const extension =
+      file.name.split(".").pop() || "jpg";
+
+    const owner =
+      currentUser?.id || "guest";
+
+    const fileName =
+      `${owner}/${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}.${extension}`;
+
+    const { error } = await db.storage
+      .from("listing-images")
+      .upload(
+        fileName,
+        file,
+        {
+          cacheControl: "3600",
+          upsert: false
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    const { data } = db.storage
+      .from("listing-images")
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  }
+
+  document
+    .getElementById("listingForm")
+    .addEventListener("submit", async event => {
+
+      event.preventDefault();
+
+      if (!currentUser) {
+        toast(
+          "Відкрий маркет через Telegram, щоб додати оголошення 🌷"
+        );
+        return;
+      }
+
+      const button =
+        document.getElementById("publishBtn");
+
+      button.disabled = true;
+      button.textContent = "Публікую…";
+
+      try {
+        const file =
+          document.getElementById("photo")
+            .files[0];
+
+        let photoUrl = null;
+
+        if (file) {
+          photoUrl = await uploadPhoto(file);
+        }
+
+        let sellerTelegram =
+          normalizeTelegram(
+            document.getElementById(
+              "sellerTelegram"
+            ).value
+          );
+
+        if (
+          !sellerTelegram &&
+          currentUser.username
+        ) {
+          sellerTelegram =
+            currentUser.username;
+        }
+
+        const listing = {
+          title:
+            document.getElementById("title")
+              .value
+              .trim(),
+
+          price:
+            Number(
+              document.getElementById("price")
+                .value
+            ),
+
+          category:
+            document.getElementById("category")
+              .value,
+
+          description:
+            document.getElementById(
+              "description"
+            )
+              .value
+              .trim(),
+
+          seller_telegram:
+            sellerTelegram,
+
+          telegram_user_id:
+            String(currentUser.id),
+
+          telegram_username:
+            currentUser.username || null,
+
+          seller_name:
+            [
+              currentUser.first_name,
+              currentUser.last_name
+            ]
+              .filter(Boolean)
+              .join(" ") || null,
+
+          photo_url:
+            photoUrl
+        };
+
+        const { error } = await db
+          .from("listings")
+          .insert(listing);
+
+        if (error) {
+          throw error;
+        }
+
+        document
+          .getElementById("listingForm")
+          .reset();
+
+        if (currentUser.username) {
+          document.getElementById(
+            "sellerTelegram"
+          ).value =
+            "@" + currentUser.username;
+        }
+
+        toast("Оголошення опубліковано 💕");
+
+        await loadListings();
+
+        showPage("home");
+
+      } catch (error) {
+        console.error(error);
+
+        toast(
+          "Помилка: " +
+          (error.message || "не вдалося опублікувати")
+        );
+
+      } finally {
+        button.disabled = false;
+        button.textContent =
+          "Опублікувати 🌸";
+      }
+    });
+
+  async function startApp() {
+    renderCategories();
+
+    await authenticateTelegram();
+
+    await loadListings();
+  }
+
+  startApp();
+</script>
+
+</body>
+</html>
